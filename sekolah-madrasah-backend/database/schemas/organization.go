@@ -7,10 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// Organization represents a Perumahan (housing complex/estate).
-// Conceptually: Organization = Perumahan
-// Example: "BTN Griya Sehati" (code: BTN-GRY-SHTI)
-// Contains multiple RTs (stored in perumahans table)
+// Organization represents a Yayasan or Educational Institution.
+// Conceptually: Organization = Yayasan (Foundation)
+// Example: "Yayasan Pendidikan Islam" (code: YPI-001)
+// Contains multiple Schools/Units (stored in units table)
 type Organization struct {
 	Id          uuid.UUID `gorm:"type:uuid;primaryKey"`
 	OwnerId     uuid.UUID `gorm:"type:uuid;not null;index"`

@@ -7,16 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
-// Unit represents a subdivision within an Organization (e.g., RT, Blok, Cluster, Tower).
-// This was previously called "Perumahan" but renamed for clarity.
-// Example: "RT 01", "RT 02", "Blok A" under organization "BTN Griya Sehati"
+// Unit represents a School or Educational Unit within an Organization.
+// Example: "SMA Negeri 1", "SD Islam Al-Azhar" under organization "Yayasan Al-Azhar"
 type Unit struct {
 	Id             uuid.UUID `gorm:"type:uuid;primaryKey"`
 	OrganizationId uuid.UUID `gorm:"type:uuid;not null;index"`
 	Name           string    `gorm:"type:varchar(255);not null"`
-	Code           string    `gorm:"type:varchar(50);uniqueIndex;not null"` // Unique unit code
+	Code           string    `gorm:"type:varchar(50);uniqueIndex;not null"` // Unique unit code (e.g. NPSN)
 	Slug           string    `gorm:"type:varchar(100);uniqueIndex"`         // URL slug for public registration
-	Type           string    `gorm:"type:varchar(50);not null"`             // RT/Blok/Cluster/Tower
+	Type           string    `gorm:"type:varchar(50);not null"`             // SD/SMP/SMA/TK/Madrasah
 	Address        string    `gorm:"type:text"`
 	Phone          string    `gorm:"type:varchar(20)"`
 	Email          string    `gorm:"type:varchar(255)"`
