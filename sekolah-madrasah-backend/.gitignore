@@ -1,0 +1,55 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+firebase-debug.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build
+build/
+dist/
+tmp/
+
+# AI / Agent folders
+.claude/
+.gemini/
+.agent/
+
+# Swagger docs (regenerated)
+docs/swagger.json
+docs/swagger.yaml
+
+# Coverage reports
+coverage.html
+coverage.txt

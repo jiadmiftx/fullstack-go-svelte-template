@@ -1,0 +1,42 @@
+services:
+  app:
+    build: .
+    container_name: sekolah_madrasah_app
+    ports:
+      - "${REST_PORT:-8080}:8080"
+    environment:
+      - REST_PORT=8080
+      - REST_SECRET=${REST_SECRET:-dev-secret-key-change-in-production}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME:-sekolah_madrasah}
+      - DB_PASSWORD=${DB_PASSWORD:-sekolah123}
+      - DB_NAME=${DB_NAME:-sekolah_madrasah_db}
+      - DB_SSLMODE=disable
+      - DB_EVENT=migrate
+      - ELASTIC_APM_ENABLED=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sekolah_madrasah_postgres
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-sekolah_madrasah}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sekolah123}
+      POSTGRES_DB: ${DB_NAME:-sekolah_madrasah_db}
+    volumes:
+      - sekolah_madrasah_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME:-sekolah_madrasah} -d ${DB_NAME:-sekolah_madrasah_db}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  sekolah_madrasah_postgres_data:
