@@ -26,64 +26,10 @@
             roles: ["admin", "staff", "pengurus", "warga", "parent"],
         },
         {
-            href: "wargas",
-            label: "Warga",
-            iconType: "warga",
-            roles: ["admin", "staff"],
-        },
-        {
-            href: "rooms",
-            label: "Ruang",
-            iconType: "home",
-            roles: ["admin", "staff"],
-        },
-        {
-            href: "kegiatans",
-            label: "Kegiatan",
-            iconType: "kegiatan",
-            roles: ["admin", "staff"],
-        },
-        {
-            href: "calendar",
-            label: "Kalender",
-            iconType: "calendar",
-            roles: ["admin", "staff", "pengurus", "warga"],
-        },
-        {
-            href: "iurans",
-            label: "Iuran",
-            iconType: "iuran",
-            roles: ["admin", "staff", "pengurus", "warga"],
-        },
-        {
             href: "pengumuman",
             label: "Pengumuman",
             iconType: "announcement",
             roles: ["admin", "staff", "pengurus", "warga"],
-        },
-        {
-            href: "reports",
-            label: "Laporan",
-            iconType: "report",
-            roles: ["admin", "staff", "pengurus"],
-        },
-        {
-            href: "pending-registrations",
-            label: "Verifikasi Warga",
-            iconType: "approval",
-            roles: ["admin", "staff"],
-        },
-        {
-            href: "struktur",
-            label: "Struktur RT",
-            iconType: "struktur",
-            roles: ["admin", "staff", "pengurus"],
-        },
-        {
-            href: "jabatan",
-            label: "Struktur RT",
-            iconType: "struktur",
-            roles: ["warga"],
         },
     ];
 
@@ -161,9 +107,7 @@
             console.log("Warga Profile ID:", wargaProfileId);
 
             // Fetch struktur RT which includes member assignments
-            const strukturRes: any = await api.get(
-                `/units/${unitId}/struktur`,
-            );
+            const strukturRes: any = await api.get(`/units/${unitId}/struktur`);
             console.log("Struktur Response:", strukturRes);
 
             // Priority order (higher = more important)
@@ -325,7 +269,7 @@
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
-                    Kembali ke Daftar RT
+                    Kembali ke Daftar Sekolah
                 </a>
             {/if}
 
@@ -370,7 +314,7 @@
                     <a
                         href={item.href}
                         class="nav-item"
-                        rt:active={isActive(item.href)}
+                        class:active={isActive(item.href)}
                     >
                         <span class="nav-icon">
                             {#if item.iconType === "profile"}

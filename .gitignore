@@ -1,0 +1,41 @@
+# =========================
+# Sekolah-Madrasah Template
+# Root .gitignore
+# =========================
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Environment files (sensitive!)
+.env
+.env.local
+.env.*.local
+
+# AI Agent temporary folders (NOT the .agent docs)
+.claude/
+.gemini/
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build artifacts
+build/
+dist/
+tmp/
+
+# Note: .agent/ folder is INCLUDED for AI documentation
+# Backend and Frontend have their own .gitignore files
