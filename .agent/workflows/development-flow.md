@@ -26,8 +26,8 @@ Setiap fitur baru dikerjakan dalam **3 FASE** terpisah:
 │  FASE 2: BACKEND (Implementasi API)                         │
 │  ──────────────────────────────────                         │
 │  • Schema → Repository → Use Case → Controller → Routes     │
-│  • Test API endpoints                                       │
-│  • Review dengan user → TUNGGU APPROVAL                     │
+│  • Test API via Swagger                                     │
+│  • Unit tests & Review → TUNGGU APPROVAL                    │
 └─────────────────────────────────────────────────────────────┘
                            │
                            ▼ User Approval ✅
@@ -97,6 +97,33 @@ TUNGGU user bilang "OK" / "Approved" / "Lanjut" sebelum ke FASE 2!
 
 > ⚠️ JANGAN mulai fase ini sebelum FASE 1 di-approve!
 
+### 📚 MANDATORY: Baca Dokumentasi Backend
+Sebelum implementasi, **WAJIB** baca dokumentasi di `sekolah-madrasah-backend/ai_instruction/` sesuai urutan:
+
+```
+📋 Learning Order (WAJIB DIIKUTI - SEMUA WAJIB):
+1. project_architecture.md     → Pahami Clean Architecture
+2. app_package.md              → Aturan development app/ folder (99% CRITICAL)
+3. main_and_routes_guide.md    → Cara connect semua layers
+4. MAP_VALIDATOR_GUIDE.md      → Request validation patterns
+5. swagger_annotation_guide.md → Dokumentasi API
+6. apm_and_log_guide.md        → Monitoring & logging
+```
+
+### 📋 Checklist Sebelum Coding
+```
+□ Sudah baca project_architecture.md?
+□ Sudah baca app_package.md?
+□ Sudah baca swagger_annotation_guide.md?
+□ Sudah baca apm_and_log_guide.md?
+□ Paham Clean Architecture layers?
+□ Paham Filter Pattern untuk repository?
+□ Paham UUID sebagai default ID type?
+□ Paham paginate_utils.Paginate scope?
+□ Paham aturan Swagger annotation untuk controller?
+□ Paham APM tracing dan structured logging?
+```
+
 ### Langkah 2.1: Schema
 ```go
 // database/schemas/{nama_fitur}.go
@@ -113,6 +140,7 @@ type NamaFitur struct {
 type NamaFiturRepository interface {
     Create, FindById, FindByUnitId, Update, Delete
 }
+// Gunakan Filter Pattern untuk query dengan banyak kondisi
 ```
 
 ### Langkah 2.3: Use Case
@@ -121,18 +149,20 @@ type NamaFiturRepository interface {
 type NamaFiturUseCase struct {
     // business logic
 }
+// Jangan import controller, hanya repository dan models
 ```
 
 ### Langkah 2.4: Controller
 ```go
 // app/controller/{nama_fitur}_controller/controller.go
-// HTTP handlers
+// HTTP handlers dengan Swagger annotations
+// Gunakan map_validator untuk request validation
 ```
 
 ### Langkah 2.5: Routes
 ```go
 // routes/rest.go
-// Daftarkan routes baru
+// Daftarkan routes baru dengan proper middleware
 ```
 
 ### Langkah 2.6: Migration
@@ -141,18 +171,40 @@ type NamaFiturUseCase struct {
 db.AutoMigrate(&schemas.NamaFitur{})
 ```
 
-### Langkah 2.7: Test API
+### Langkah 2.7: Generate Swagger Docs
 ```bash
-# Test endpoints
-curl http://localhost:8080/api/v1/units/{unitId}/nama-fitur
+# Generate swagger documentation
+// turbo
+make swagger-local
 ```
+
+### Langkah 2.8: Restart Backend & Test API via Swagger
+```bash
+# Restart backend untuk load routes baru
+go run main.go
+
+# Buka Swagger UI
+# http://localhost:8080/swagger/index.html
+```
+
+### Langkah 2.9: Unit Tests
+```bash
+# Buat test files sesuai workflow unit-testing.md
+// turbo
+go test ./app/use_case/{nama_fitur}_use_case/... -v
+// turbo
+go test ./database/schemas/... -v
+```
+
+> Lihat `.agent/workflows/unit-testing.md` untuk detail coverage requirements.
 
 ### ⏸️ CHECKPOINT: Minta Approval User
 ```
 Konfirmasi ke user:
 1. Backend sudah selesai
-2. API bisa ditest
+2. API bisa ditest via Swagger (http://localhost:8080/swagger/index.html)
 3. Tabel sudah terbuat di database
+4. Unit tests sudah dibuat dan passing
 
 TUNGGU user bilang "OK lanjut ke frontend" sebelum ke FASE 3!
 ```
@@ -200,41 +252,57 @@ const response = await api.get(`/units/${unitId}/nama-fitur`);
 
 ## 📝 Contoh Eksekusi
 
-### User Request: "Buatkan fitur Kelas/Rombel"
+### User Request: "Buatkan fitur Jadwal Pelajaran"
 
 **Agent Response (FASE 1):**
 ```
-Baik, saya akan membuat fitur Classes. Berikut proposal desainnya:
+Saya akan membuat fitur Jadwal Pelajaran. Berikut proposal desainnya:
 
-### Tabel: `classes`
+### Tabel: `schedules`
 | Field | Type | Constraint | Keterangan |
 |-------|------|------------|------------|
 | id | UUID | PK | |
 | unit_id | UUID | FK | Sekolah |
-| name | VARCHAR(100) | NOT NULL | "X IPA 1" |
-| level | INT | NOT NULL | Tingkat (10,11,12) |
-| homeroom_teacher_id | UUID | FK, NULLABLE | Wali Kelas |
+| class_id | UUID | FK | Kelas |
+| subject | VARCHAR(100) | NOT NULL | Mata pelajaran |
+| day_of_week | INT | NOT NULL | 1-7 (Senin-Minggu) |
+| start_time | TIME | NOT NULL | Jam mulai |
+| end_time | TIME | NOT NULL | Jam selesai |
 
 ### API Endpoints:
-- GET/POST /api/v1/units/:id/classes
-- GET/PUT/DELETE /api/v1/units/:id/classes/:classId
+- GET/POST /api/v1/units/:id/schedules
+- GET/PUT/DELETE /api/v1/units/:id/schedules/:scheduleId
 
-Apakah struktur ini sudah sesuai? Jika ya, saya akan lanjut implementasi Backend.
+Apakah struktur ini sudah sesuai?
 ```
 
 **User:** "OK lanjut"
 
-**Agent (FASE 2):** Implementasi backend...
+**Agent (FASE 2):**
+```
+Sebelum implementasi, saya akan baca:
+1. ✅ ai_instruction/project_architecture.md
+2. ✅ ai_instruction/app_package.md
+3. ✅ ai_instruction/main_and_routes_guide.md
+4. ✅ ai_instruction/MAP_VALIDATOR_GUIDE.md
+5. ✅ ai_instruction/swagger_annotation_guide.md
+6. ✅ ai_instruction/apm_and_log_guide.md
+
+Memulai implementasi backend...
+```
 
 **Agent (setelah FASE 2 selesai):**
 ```
 Backend sudah selesai:
-- ✅ Schema `class.go` dibuat
-- ✅ Repository, UseCase, Controller dibuat
+- ✅ Schema `schedule.go` dibuat
+- ✅ Repository dengan Filter Pattern
+- ✅ UseCase dengan business logic
+- ✅ Controller dengan Swagger annotations
 - ✅ Routes didaftarkan
-- ✅ Tabel `classes` sudah terbuat di database
+- ✅ Swagger docs: http://localhost:8080/swagger/index.html
+- ✅ Unit tests passing
 
-Apakah mau saya lanjut ke Frontend?
+Silakan test API via Swagger. Lanjut ke Frontend?
 ```
 
 **User:** "Ya, lanjut frontend"
@@ -246,14 +314,33 @@ Apakah mau saya lanjut ke Frontend?
 ## ⚠️ Aturan Penting
 
 1. **WAJIB** tunggu approval user sebelum pindah fase
-2. **JANGAN** langsung kerja frontend jika backend belum final
-3. **JANGAN** modifikasi schema setelah masuk FASE 3 (kecuali user minta)
-4. **SELALU** update `CHANGELOG.md` setelah setiap fase selesai
-5. **JANGAN** push ke git tanpa konfirmasi user
+2. **WAJIB** baca `ai_instruction/` sesuai urutan sebelum coding backend
+3. **JANGAN** langsung kerja frontend jika backend belum final
+4. **JANGAN** modifikasi schema setelah masuk FASE 3 (kecuali user minta)
+5. **SELALU** update `CHANGELOG.md` setelah setiap fase selesai
+6. **JANGAN** push ke git tanpa konfirmasi user
+7. **WAJIB** buat unit tests untuk use case dan model (lihat `unit-testing.md`)
+8. **WAJIB** generate Swagger docs dan test API sebelum minta approval FASE 2
 
 ---
 
 ## 🔗 Referensi
-- Desain Database: `.agent/AI_CONTEXT.md` (Section 2)
-- Coding Patterns: `.agent/AI_CONTEXT.md` (Section 4-5)
+
+### Backend Development (SEMUA WAJIB)
+- **Learning Order**: `sekolah-madrasah-backend/ai_instruction/instruction_order.md`
+- **Clean Architecture**: `sekolah-madrasah-backend/ai_instruction/project_architecture.md`
+- **App Package Rules**: `sekolah-madrasah-backend/ai_instruction/app_package.md`
+- **Routes & DI**: `sekolah-madrasah-backend/ai_instruction/main_and_routes_guide.md`
+- **Validation**: `sekolah-madrasah-backend/ai_instruction/MAP_VALIDATOR_GUIDE.md`
+- **Swagger Docs**: `sekolah-madrasah-backend/ai_instruction/swagger_annotation_guide.md`
+- **APM & Logging**: `sekolah-madrasah-backend/ai_instruction/apm_and_log_guide.md`
+
+### Project Documentation
+- Database Schema: `.agent/DATABASE_SCHEMA.md`
+- AI Context: `.agent/AI_CONTEXT.md`
+- Unit Testing: `.agent/workflows/unit-testing.md`
 - Update Docs: `.agent/workflows/update-documentation.md`
+
+### APIs
+- Swagger UI: `http://localhost:8080/swagger/index.html`
+- API Base URL: `http://localhost:8080/api/v1`

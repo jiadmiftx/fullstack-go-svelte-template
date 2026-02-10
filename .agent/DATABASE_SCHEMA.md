@@ -1,6 +1,6 @@
 # Database Schema Documentation
 
-> **Last Updated**: 2026-02-06  
+> **Last Updated**: 2026-02-09  
 > **Database**: PostgreSQL  
 > **ORM**: GORM (Go)
 
@@ -11,7 +11,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              USERS                                          │
-│  (Pengguna Global - Satu akun bisa masuk ke banyak Yayasan/Sekolah)        │
+│  (Pengguna Global - Satu akun bisa masuk ke banyak Yayasan/Sekolah)         │
 └─────────────────────────────────────────────────────────────────────────────┘
          │                                    │
          │ (owns)                             │ (joins)
@@ -126,7 +126,7 @@
 | `organization_id` | UUID | FK → organizations.id, NOT NULL | Yayasan induk |
 | `name` | VARCHAR(255) | NOT NULL | Nama sekolah |
 | `code` | VARCHAR(50) | UNIQUE, NOT NULL | NPSN / Kode unik |
-| `slug` | VARCHAR(100) | UNIQUE | URL slug |
+| `slug` | VARCHAR(100) | UNIQUE, NULLABLE | URL slug (bisa diisi belakangan) |
 | `type` | VARCHAR(50) | NOT NULL | Jenjang (SD/SMP/SMA/TK) |
 | `address` | TEXT | | Alamat |
 | `phone` | VARCHAR(20) | | Telepon |
@@ -385,6 +385,241 @@
 
 ---
 
+### 14. TEACHER_PROFILES (Profil Guru)
+
+**Deskripsi**: Data profil lengkap untuk guru (NIP, NUPTK, pendidikan, status kepegawaian).
+
+| Field | Type | Constraint | Keterangan |
+|-------|------|------------|------------|
+| `id` | UUID | PK | Primary Key |
+| `user_id` | UUID | FK → users.id, UNIQUE, NOT NULL | 1:1 dengan user |
+| `unit_id` | UUID | FK → units.id, NOT NULL | Sekolah |
+| `nip` | VARCHAR(30) | NULLABLE | Nomor Induk Pegawai |
+| `nuptk` | VARCHAR(30) | NULLABLE | Nomor Unik Pendidik |
+| `education_level` | VARCHAR(20) | NULLABLE | S1/S2/S3/D3 |
+| `education_major` | VARCHAR(100) | NULLABLE | Jurusan |
+| `employment_status` | VARCHAR(20) | DEFAULT 'honorer' | PNS/Honorer/GTY/Kontrak |
+| `join_date` | DATE | NULLABLE | Tanggal mulai mengajar |
+| `subjects` | JSONB | DEFAULT '[]' | ⚠️ DEPRECATED - Gunakan `teacher_subjects` |
+| `created_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `updated_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `deleted_at` | TIMESTAMP | INDEX, NULLABLE | Soft delete |
+
+> [!WARNING]
+> Field `subjects` JSONB sudah deprecated. Gunakan relasi `teacher_subjects` untuk data mapel yang diampu.
+
+**Relasi**:
+- Belongs to `users` (1:1)
+- Belongs to `units`
+- Has many `teacher_subjects` (mapel yang diampu)
+- Has one `classes` (wali kelas via homeroom_teacher_id)
+
+---
+
+### 15. STUDENT_PROFILES (Profil Siswa)
+
+**Deskripsi**: Data profil lengkap untuk siswa (NIS, NISN, data diri, orang tua).
+
+| Field | Type | Constraint | Keterangan |
+|-------|------|------------|------------|
+| `id` | UUID | PK | Primary Key |
+| `user_id` | UUID | FK → users.id, UNIQUE, NOT NULL | 1:1 dengan user |
+| `unit_id` | UUID | FK → units.id, NOT NULL | Sekolah |
+| `nis` | VARCHAR(30) | NULLABLE | Nomor Induk Siswa (internal) |
+| `nisn` | VARCHAR(20) | NULLABLE | Nomor Induk Siswa Nasional |
+| `birth_place` | VARCHAR(100) | NULLABLE | Tempat lahir |
+| `birth_date` | DATE | NULLABLE | Tanggal lahir |
+| `gender` | VARCHAR(10) | NULLABLE | L/P |
+| `religion` | VARCHAR(20) | NULLABLE | Agama |
+| `address` | TEXT | NULLABLE | Alamat lengkap |
+| `father_name` | VARCHAR(100) | NULLABLE | Nama ayah |
+| `mother_name` | VARCHAR(100) | NULLABLE | Nama ibu |
+| `guardian_name` | VARCHAR(100) | NULLABLE | Nama wali |
+| `parent_phone` | VARCHAR(20) | NULLABLE | Telepon orang tua |
+| `enrollment_date` | DATE | NULLABLE | Tanggal masuk sekolah |
+| `created_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `updated_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `deleted_at` | TIMESTAMP | INDEX, NULLABLE | Soft delete |
+
+**Relasi**:
+- Belongs to `users` (1:1)
+- Belongs to `units`
+- Has many `class_enrollments`
+
+---
+
+### 16. CLASSES (Kelas/Rombel)
+
+**Deskripsi**: Kelas atau rombongan belajar per tahun ajaran.
+
+| Field | Type | Constraint | Keterangan |
+|-------|------|------------|------------|
+| `id` | UUID | PK | Primary Key |
+| `unit_id` | UUID | FK → units.id, NOT NULL | Sekolah |
+| `name` | VARCHAR(50) | NOT NULL | Nama kelas (X IPA 1) |
+| `level` | INT | NOT NULL | Tingkat (1-12) |
+| `academic_year` | VARCHAR(20) | NOT NULL | Tahun ajaran (2025/2026) |
+| `homeroom_teacher_id` | UUID | FK → teacher_profiles.id, NULLABLE | Wali kelas |
+| `capacity` | INT | DEFAULT 30 | Kapasitas maksimal |
+| `is_active` | BOOLEAN | DEFAULT true | Status aktif |
+| `created_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `updated_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `deleted_at` | TIMESTAMP | INDEX, NULLABLE | Soft delete |
+
+**Relasi**:
+- Belongs to `units`
+- Belongs to `teacher_profiles` (homeroom teacher)
+- Has many `class_enrollments`
+
+---
+
+### 17. CLASS_ENROLLMENTS (Pendaftaran Kelas)
+
+**Deskripsi**: Relasi siswa-kelas per tahun ajaran dengan riwayat status.
+
+| Field | Type | Constraint | Keterangan |
+|-------|------|------------|------------|
+| `id` | UUID | PK | Primary Key |
+| `student_profile_id` | UUID | FK → student_profiles.id, NOT NULL | Profil siswa |
+| `class_id` | UUID | FK → classes.id, NOT NULL | Kelas |
+| `academic_year` | VARCHAR(20) | NOT NULL | Tahun ajaran |
+| `status` | VARCHAR(20) | DEFAULT 'active' | active/graduated/transferred/dropped |
+| `enrolled_at` | DATE | NOT NULL | Tanggal masuk kelas |
+| `left_at` | DATE | NULLABLE | Tanggal keluar |
+| `notes` | TEXT | NULLABLE | Catatan |
+| `created_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `updated_at` | TIMESTAMP | NOT NULL | Auto-fill |
+
+**Status Values**:
+- `active` - Aktif di kelas
+- `graduated` - Lulus
+- `transferred` - Pindah kelas
+- `dropped` - Keluar
+
+**Relasi**:
+- Belongs to `student_profiles`
+- Belongs to `classes`
+
+---
+
+### 18. SUBJECTS (Mata Pelajaran)
+
+**Deskripsi**: Master data mata pelajaran per sekolah.
+
+| Field | Type | Constraint | Keterangan |
+|-------|------|------------|------------|
+| `id` | UUID | PK | Primary Key |
+| `unit_id` | UUID | FK → units.id, NOT NULL | Sekolah |
+| `name` | VARCHAR(100) | NOT NULL | Nama mapel (Matematika) |
+| `code` | VARCHAR(20) | NOT NULL | Kode (MTK) |
+| `category` | VARCHAR(50) | NULLABLE | Umum/Jurusan/Mulok |
+| `description` | TEXT | NULLABLE | Deskripsi |
+| `is_active` | BOOLEAN | DEFAULT true | Status aktif |
+| `created_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `updated_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `deleted_at` | TIMESTAMP | INDEX, NULLABLE | Soft delete |
+
+**Relasi**:
+- Belongs to `units`
+- Has many `teacher_subjects`
+
+---
+
+### 19. TEACHER_SUBJECTS (Guru-Mapel)
+
+**Deskripsi**: Relasi many-to-many antara guru dan mata pelajaran.
+
+| Field | Type | Constraint | Keterangan |
+|-------|------|------------|------------|
+| `id` | UUID | PK | Primary Key |
+| `teacher_profile_id` | UUID | FK → teacher_profiles.id, NOT NULL | Guru |
+| `subject_id` | UUID | FK → subjects.id, NOT NULL | Mata pelajaran |
+| `is_primary` | BOOLEAN | DEFAULT false | Mapel utama guru |
+| `created_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `deleted_at` | TIMESTAMP | INDEX, NULLABLE | Soft delete |
+
+**Relasi**:
+- Belongs to `teacher_profiles`
+- Belongs to `subjects`
+
+---
+
+### 20. ACTIVITIES (Kegiatan)
+
+**Deskripsi**: Master data kegiatan sekolah (ekstrakurikuler, kajian, event).
+
+| Field | Type | Constraint | Keterangan |
+|-------|------|------------|------------|
+| `id` | UUID | PK | Primary Key |
+| `unit_id` | UUID | FK → units.id, NOT NULL | Sekolah |
+| `name` | VARCHAR(100) | NOT NULL | Nama (Pramuka, Kajian Fiqih) |
+| `type` | VARCHAR(50) | NOT NULL | ekstrakurikuler/kajian/event |
+| `category` | VARCHAR(50) | NULLABLE | halaqah/tahsin/daurah/olahraga/seni/akademik |
+| `description` | TEXT | NULLABLE | Deskripsi |
+| `start_date` | DATE | NULLABLE | Tanggal mulai kegiatan |
+| `end_date` | DATE | NULLABLE | Tanggal berakhir (null = ongoing) |
+| `recurrence_type` | VARCHAR(20) | DEFAULT 'none' | none/daily/weekly/monthly |
+| `recurrence_days` | INTEGER[] | NULLABLE | Array hari [0-6] untuk weekly, [1-31] untuk monthly |
+| `start_time` | VARCHAR(10) | NULLABLE | Jam mulai (14:00) |
+| `end_time` | VARCHAR(10) | NULLABLE | Jam selesai (16:00) |
+| `location` | VARCHAR(200) | NULLABLE | Lokasi/tempat kegiatan |
+| `max_participants` | INT | NULLABLE | Batas maksimal peserta |
+| `fee` | DECIMAL(12,2) | NULLABLE | Biaya kegiatan (Rp) |
+| `is_active` | BOOLEAN | DEFAULT true | Status aktif |
+| `created_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `updated_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `deleted_at` | TIMESTAMP | INDEX, NULLABLE | Soft delete |
+
+**Contoh recurrence_days**:
+- Weekly: `[1, 3]` = Senin & Rabu
+- Monthly: `[1, 15]` = Tanggal 1 & 15
+
+**Relasi**:
+- Belongs to `units`
+- Has many `activity_teachers`
+- Has many `activity_students`
+
+---
+
+### 21. ACTIVITY_TEACHERS (Pembina Kegiatan)
+
+**Deskripsi**: Guru yang ditugaskan sebagai pembina/pengisi kegiatan.
+
+| Field | Type | Constraint | Keterangan |
+|-------|------|------------|------------|
+| `id` | UUID | PK | Primary Key |
+| `activity_id` | UUID | FK → activities.id, NOT NULL | Kegiatan |
+| `teacher_profile_id` | UUID | FK → teacher_profiles.id, NOT NULL | Guru |
+| `role` | VARCHAR(50) | DEFAULT 'pembina' | pembina/pengisi/koordinator |
+| `created_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `deleted_at` | TIMESTAMP | INDEX, NULLABLE | Soft delete |
+
+**Relasi**:
+- Belongs to `activities`
+- Belongs to `teacher_profiles`
+
+---
+
+### 22. ACTIVITY_STUDENTS (Peserta Kegiatan)
+
+**Deskripsi**: Siswa yang terdaftar dalam kegiatan.
+
+| Field | Type | Constraint | Keterangan |
+|-------|------|------------|------------|
+| `id` | UUID | PK | Primary Key |
+| `activity_id` | UUID | FK → activities.id, NOT NULL | Kegiatan |
+| `student_profile_id` | UUID | FK → student_profiles.id, NOT NULL | Siswa |
+| `is_mandatory` | BOOLEAN | DEFAULT false | Wajib/Pilihan |
+| `joined_at` | DATE | NULLABLE | Tanggal gabung |
+| `created_at` | TIMESTAMP | NOT NULL | Auto-fill |
+| `deleted_at` | TIMESTAMP | INDEX, NULLABLE | Soft delete |
+
+**Relasi**:
+- Belongs to `activities`
+- Belongs to `student_profiles`
+
+---
+
 ## 📋 Ringkasan Relasi
 
 | Parent | Child | Tipe | Keterangan |
@@ -396,12 +631,28 @@
 | `units` | `unit_settings` | 1:1 | Sekolah has Settings |
 | `units` | `unit_members` | 1:N | Sekolah has Warga |
 | `units` | `posts` | 1:N | Sekolah has Posts |
+| `units` | `teacher_profiles` | 1:N | Sekolah has Guru |
+| `units` | `student_profiles` | 1:N | Sekolah has Siswa |
+| `units` | `classes` | 1:N | Sekolah has Kelas |
 | `users` | `organization_members` | 1:N | User joins Yayasan |
 | `users` | `unit_members` | 1:N | User joins Sekolah |
+| `users` | `teacher_profiles` | 1:1 | User has Teacher Profile |
+| `users` | `student_profiles` | 1:1 | User has Student Profile |
 | `roles` | `role_permissions` | N:M | Role has Permissions |
 | `posts` | `post_comments` | 1:N | Post has Comments |
 | `posts` | `post_poll_options` | 1:N | Post has Poll Options |
 | `post_poll_options` | `post_poll_votes` | 1:N | Option has Votes |
+| `student_profiles` | `class_enrollments` | 1:N | Student has Enrollments |
+| `classes` | `class_enrollments` | 1:N | Class has Enrollments |
+| `units` | `subjects` | 1:N | Sekolah has Mapel |
+| `subjects` | `teacher_subjects` | 1:N | Mapel has Guru |
+| `teacher_profiles` | `teacher_subjects` | 1:N | Guru has Mapel |
+| `teacher_profiles` | `classes` | 1:N | Guru as Wali Kelas |
+| `units` | `activities` | 1:N | Sekolah has Kegiatan |
+| `activities` | `activity_teachers` | 1:N | Kegiatan has Pembina |
+| `activities` | `activity_students` | 1:N | Kegiatan has Peserta |
+| `teacher_profiles` | `activity_teachers` | 1:N | Guru as Pembina |
+| `student_profiles` | `activity_students` | 1:N | Siswa in Kegiatan |
 
 ---
 

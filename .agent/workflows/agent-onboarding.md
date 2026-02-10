@@ -74,7 +74,7 @@ Setelah onboarding, agent harus mengikuti aturan:
 
 1. **JANGAN** push ke git tanpa konfirmasi user
 2. **JANGAN** modifikasi `auth_controller` tanpa diminta
-3. **JANGAN** gunakan TailwindCSS
+3. **CSS Styling**: Boleh kombinasi TailwindCSS utility classes + custom Vanilla CSS
 4. **SELALU** gunakan UUID untuk primary key
 5. **SELALU** tambahkan soft delete (`DeletedAt`)
 6. **SELALU** ikuti pola kode yang sudah ada

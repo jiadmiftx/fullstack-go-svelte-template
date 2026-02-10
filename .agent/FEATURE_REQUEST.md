@@ -1,126 +1,114 @@
 # Feature Request: [Nama Fitur]
 
-> **Instruksi untuk AI Agent**: Kerjakan fitur ini sesuai requirements di bawah. Ikuti workflow di `.agent/workflows/development-flow.md`.
+> **Untuk User**: Cukup isi bagian yang mudah. AI Agent akan mendesain detail teknis-nya.
 
 ---
 
-## 📋 Overview
+## 1. Deskripsi Fitur
 
-**Nama Fitur**: [Tuliskan nama fitur]
-**Prioritas**: [High / Medium / Low]
-**Target**: [Organization / Unit / User]
-
-**Deskripsi Singkat**:
-[Jelaskan singkat fitur ini untuk apa]
+**Nama Fitur**: [contoh: Classes / Kelas]  
+**Deskripsi**: [jelaskan singkat fitur ini untuk apa]  
+**Parent**: [Organization / Unit / User] - tabel induk yang berelasi
 
 ---
 
-## 📊 Database Requirements
+## 2. Data yang Dibutuhkan
 
-### Tabel Baru
-| Tabel | Relasi | Keterangan |
-|-------|--------|------------|
-| `nama_tabel` | belongs to `units` | Deskripsi |
+Cukup tulis **nama field dan keterangan singkat**. AI Agent akan menentukan tipe data.
 
-### Detail Field (per tabel)
+### Tabel: `[nama_tabel]`
+```
+- nama kelas (wajib)
+- tingkat/level (angka, contoh: 10, 11, 12)
+- wali kelas (referensi ke user, opsional)
+- kapasitas maksimal siswa
+- deskripsi (opsional)
+```
 
-#### Tabel: `nama_tabel`
-| Field | Type | Nullable | Keterangan |
-|-------|------|----------|------------|
-| id | UUID | No | Primary Key |
-| unit_id | UUID | No | FK → units |
-| name | VARCHAR(255) | No | Nama |
-| ... | ... | ... | ... |
-| created_at | TIMESTAMP | No | Auto |
-| updated_at | TIMESTAMP | No | Auto |
-| deleted_at | TIMESTAMP | Yes | Soft delete |
-
----
-
-## 🔌 API Requirements
-
-### Endpoints yang Dibutuhkan
-| Method | Path | Keterangan |
-|--------|------|------------|
-| GET | /api/v1/units/:id/nama-fitur | List all |
-| POST | /api/v1/units/:id/nama-fitur | Create new |
-| GET | /api/v1/units/:id/nama-fitur/:itemId | Get by ID |
-| PUT | /api/v1/units/:id/nama-fitur/:itemId | Update |
-| DELETE | /api/v1/units/:id/nama-fitur/:itemId | Delete |
-
-### Request/Response Format (Opsional)
-```json
-// POST Request Body
-{
-    "name": "string",
-    "field_lain": "value"
-}
-
-// Response
-{
-    "success": true,
-    "data": { ... }
-}
+### Tabel: `[nama_tabel_2]` (jika ada)
+```
+- field 1
+- field 2
 ```
 
 ---
 
-## 🖥️ Frontend Requirements
+## 3. Fitur yang Diinginkan (centang yang perlu)
 
-### Halaman yang Dibutuhkan
-| Route | Fungsi |
-|-------|--------|
-| `/org/[orgId]/units/[unitId]/nama-fitur` | List view |
-| `/org/[orgId]/units/[unitId]/nama-fitur/[id]` | Detail view |
-| `/org/[orgId]/units/[unitId]/nama-fitur/create` | Form create |
-
-### UI Components
-- [ ] Tabel dengan pagination
-- [ ] Form create/edit
-- [ ] Modal konfirmasi delete
-- [ ] Search/filter (opsional)
-
-### Menu Navigation
-- Label: "Nama Fitur"
-- Icon: [nama icon]
-- Roles: ["admin", "staff"]
+- [ ] List/Daftar dengan pagination
+- [ ] Form Create/Edit
+- [ ] Detail view
+- [ ] Search/Filter
+- [ ] Export data
+- [ ] Import data
+- [ ] Soft delete
+- [ ] Lainnya: ___
 
 ---
 
-## ✅ Acceptance Criteria
+## 4. Catatan Tambahan (Opsional)
 
-- [ ] Tabel database terbuat dengan benar
-- [ ] API endpoint berfungsi (CRUD)
-- [ ] Frontend terintegrasi dengan API
-- [ ] Validasi input berfungsi
-- [ ] Error handling proper
-- [ ] Responsive design
+[Tulis hal khusus yang perlu diperhatikan, referensi UI, atau batasan bisnis]
 
 ---
 
-## 📝 Notes / Catatan Tambahan
-
-[Tulis catatan tambahan, referensi, atau hal khusus di sini]
-
----
-
-## 🚦 Status
+## 5. Status (Diisi AI Agent)
 
 | Fase | Status | Tanggal |
 |------|--------|---------|
-| Design | ⏳ Pending | - |
-| Backend | ⏳ Pending | - |
-| Frontend | ⏳ Pending | - |
-
-**Legend**: ⏳ Pending | 🔄 In Progress | ✅ Done | ❌ Blocked
+| Design | ⏳ | - |
+| Backend | ⏳ | - |
+| Frontend | ⏳ | - |
 
 ---
 
-## 📌 Untuk AI Agent
+# ═══════════════════════════════════════════════════════════════
+# CONTOH PENGISIAN (Hapus setelah memahami)
+# ═══════════════════════════════════════════════════════════════
 
-Setelah selesai mengerjakan setiap fase:
-1. Update status di tabel atas
-2. Update `.agent/CHANGELOG.md`
-3. Minta approval user sebelum lanjut fase berikutnya
+## 1. Deskripsi Fitur
 
-**JANGAN lanjut ke fase berikutnya tanpa approval user!**
+**Nama Fitur**: Classes (Kelas/Rombel)  
+**Deskripsi**: Manajemen kelas/rombongan belajar per sekolah  
+**Parent**: Unit
+
+---
+
+## 2. Data yang Dibutuhkan
+
+### Tabel: `classes`
+```
+- nama kelas (wajib, contoh: "X IPA 1", "VII A")
+- tingkat/level (angka: 1-12 untuk SD-SMA)
+- wali kelas (guru, opsional)
+- tahun ajaran (contoh: "2025/2026")
+- kapasitas maksimal (angka)
+- status aktif
+```
+
+### Tabel: `class_students` (siswa per kelas)
+```
+- kelas (referensi)
+- siswa (referensi ke user)
+- tanggal masuk
+- tanggal keluar (opsional, untuk pindah kelas)
+```
+
+---
+
+## 3. Fitur yang Diinginkan
+
+- [x] List/Daftar dengan pagination
+- [x] Form Create/Edit
+- [x] Detail view (lihat daftar siswa)
+- [x] Search/Filter (by tingkat, tahun ajaran)
+- [ ] Export data
+- [ ] Import data
+- [x] Soft delete
+
+---
+
+## 4. Catatan Tambahan
+
+- Satu siswa hanya boleh di 1 kelas aktif per tahun ajaran
+- Wali kelas harus dari unit member dengan role "guru"

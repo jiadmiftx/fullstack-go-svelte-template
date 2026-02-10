@@ -9,7 +9,7 @@
 ### Deskripsi Singkat
 Sistem Manajemen Sekolah/Madrasah berbasis web dengan arsitektur:
 - **Backend**: Go (Golang) + Gin + GORM + PostgreSQL
-- **Frontend**: SvelteKit + CSS (without TailwindCSS)
+- **Frontend**: SvelteKit + CSS (TailwindCSS + Vanilla CSS hybrid)
 
 ### Konsep Hierarki Utama
 ```
@@ -130,7 +130,7 @@ src/
 
 ### Frontend (Svelte)
 1. **State**: Gunakan Svelte stores (`$lib`)
-2. **CSS**: Vanilla CSS (TIDAK menggunakan TailwindCSS)
+2. **CSS**: TailwindCSS utility classes + custom Vanilla CSS (hybrid)
 3. **API Calls**: Gunakan `api` dari `$lib`
 4. **Components**: Simpan di `src/core/components/`
 
@@ -264,7 +264,7 @@ src/routes/org/[orgId]/units/[unitId]/classes/
 
 ### DON'T (Jangan)
 ❌ Modifikasi `auth_controller` kecuali diminta secara eksplisit
-❌ Menggunakan TailwindCSS di frontend (gunakan vanilla CSS)
+✅ Boleh kombinasi TailwindCSS + Vanilla CSS
 ❌ Auto-push ke repository tanpa konfirmasi user
 ❌ Membuat tabel dengan field `rt`, `warga`, `perumahan` (sudah deprecated)
 ❌ Menghapus field `DeletedAt` (soft delete wajib)
@@ -280,6 +280,7 @@ src/routes/org/[orgId]/units/[unitId]/classes/
 - **CHANGELOG.md** - Catatan semua perubahan sistem (`.agent/CHANGELOG.md`)
 - **TEMPLATE_GUIDE.md** - Panduan clone & rename project
 - **workflows/development-flow.md** - **WAJIB BACA** - Alur pengembangan (Backend-first)
+- **workflows/unit-testing.md** - Aturan unit testing (coverage requirements)
 - **workflows/** - Workflow untuk task tertentu
 
 ---

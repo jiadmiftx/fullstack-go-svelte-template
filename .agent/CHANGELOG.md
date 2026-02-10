@@ -4,6 +4,53 @@ Catatan perubahan sistem. Update file ini setiap ada perubahan signifikan.
 
 ---
 
+## [2026-02-07] - Student Management UI & Role Updates
+
+### Backend
+- ✅ `POST /units/:id/students/with-user` - Create user + student profile in one call
+- ✅ `GET /users/me/memberships` - Get user's org & unit memberships with roles
+- ✅ Updated Unit Member Roles:
+  - Added: `owner` (Kepala Sekolah/Pemilik)
+  - Added: `anggota` (Siswa/Member)
+  - Removed: `warga`
+
+### Frontend
+- ✅ Student list page with Glassmorphism style (`/students`)
+- ✅ Student detail page with tabs (`/students/[studentId]`)
+- ✅ Create student modal with password generation (NIS + DDMMYYYY)
+- ✅ Delete & reset password modals
+- ✅ Sidebar menu "Data Siswa" for admin/staff/owner
+
+### Role Hierarchy
+| Role | Access Level |
+|------|-------------|
+| `is_super_admin` | Platform-wide access |
+| `owner` | Unit owner, full access |
+| `admin` | Unit administrator |
+| `staff` | TU/Staff, manage data |
+| `pengurus` | Committee, limited access |
+| `parent` | Parent, view only |
+| `anggota` | Student/member, view only |
+
+---
+
+## [2026-02-06] - User Profiles & Classes
+
+### Database
+- ✅ `teacher_profiles` - Profil guru (NIP, NUPTK, pendidikan, status kepegawaian)
+- ✅ `student_profiles` - Profil siswa (NIS, NISN, data diri, orang tua)
+- ✅ `classes` - Kelas/Rombel per tahun ajaran
+- ✅ `class_enrollments` - Pendaftaran siswa ke kelas dengan riwayat status
+
+### API Endpoints
+- ✅ Teachers: `GET/POST /units/:id/teachers`, `GET/PUT/DELETE /units/:id/teachers/:teacherId`
+- ✅ Students: `GET/POST /units/:id/students`, `GET/PUT/DELETE /units/:id/students/:studentId`
+- ✅ Classes: `GET/POST /units/:id/classes`, `GET/PUT/DELETE /units/:id/classes/:classId`
+- ✅ Enrollments: `GET/POST /units/:id/classes/:classId/students`, `PUT/DELETE /class-enrollments/:enrollmentId`
+- ✅ Transfer: `POST /class-enrollments/:enrollmentId/transfer`
+
+---
+
 ## [2026-02-06] - Initial Setup
 
 ### Database
